@@ -119,6 +119,13 @@ enum VerificationStatus {
   REJECTED
 }
 
+/** Set after email verification when the user picks a path on the mobile app. */
+enum OnboardingIntent {
+  STANDARD_CITIZEN
+  VERIFIED_COMMUNITY
+  POLICE
+}
+
 enum NotificationChannel {
   PUSH
   SMS
@@ -161,6 +168,7 @@ model User {
   avatarUrl         String?    @map("avatar_url")
   city              String?
   role              UserRole   @default(CITIZEN)
+  onboardingIntent OnboardingIntent? @map("onboarding_intent")
   status            UserStatus @default(PENDING_VERIFICATION)
   isEmailVerified   Boolean    @default(false) @map("is_email_verified")
   isPhoneVerified   Boolean    @default(false) @map("is_phone_verified")
@@ -177,6 +185,7 @@ model User {
   officerProfile          OfficerProfile?
   enterpriseProfile       EnterpriseProfile?
   communityVerification   CommunityVerification?
+  policeOfficerApplication PoliceOfficerApplication?
   reports                 IncidentReport[]
   reportConfirmations     ReportConfirmation[]
   sosAlerts               SosAlert[]
@@ -302,6 +311,29 @@ model CommunityVerification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("community_verifications")
+}
+
+/** Pending police onboarding — admin approves into `OfficerProfile` + `POLICE_OFFICER`. */
+model PoliceOfficerApplication {
+  id                 String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId             String             @unique @map("user_id") @db.Uuid
+  badgeNumber        String             @map("badge_number")
+  rank               String
+  department         String
+  precinct           String
+  unitCode           String?            @map("unit_code")
+  idDocumentUrl      String?            @map("id_document_url")
+  verificationStatus VerificationStatus @default(PENDING) @map("verification_status")
+  reviewedBy         String?            @map("reviewed_by") @db.Uuid
+  reviewNotes        String?            @map("review_notes")
+  verifiedAt         DateTime?          @map("verified_at")
+  submittedAt        DateTime           @default(now()) @map("submitted_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([verificationStatus])
+  @@map("police_officer_applications")
 }
 
 // Police officer profile

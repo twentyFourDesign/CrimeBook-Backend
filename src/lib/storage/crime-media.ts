@@ -37,7 +37,7 @@ export function guessMediaType(mime: string): MediaType {
 
 const MAX_BYTES = 25 * 1024 * 1024;
 
-export type UploadFolder = "reports" | "verification";
+export type UploadFolder = "reports" | "verification" | "avatars";
 
 export async function uploadToCrimeMediaBucket(params: {
   folder: UploadFolder;

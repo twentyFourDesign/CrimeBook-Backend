@@ -3,7 +3,7 @@ import { requireUser } from "@/src/lib/auth/guard";
 import { fail, ok } from "@/src/lib/http/response";
 import { uploadToCrimeMediaBucket, type UploadFolder } from "@/src/lib/storage/crime-media";
 
-const FOLDERS = new Set<string>(["reports", "verification"]);
+const FOLDERS = new Set<string>(["reports", "verification", "avatars"]);
 
 export const runtime = "nodejs";
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   const folderRaw = String(form.get("folder") ?? "reports");
   if (!FOLDERS.has(folderRaw)) {
-    return fail("Invalid folder (use reports or verification)", 400);
+    return fail("Invalid folder (use reports, verification, or avatars)", 400);
   }
   const folder = folderRaw as UploadFolder;
 
