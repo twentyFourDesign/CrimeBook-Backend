@@ -5,6 +5,7 @@ import { issueTokens } from "@/src/lib/auth/session";
 import { createOtp } from "@/src/lib/auth/otp";
 import { verifyPassword } from "@/src/lib/auth/hash";
 import { sendOtpEmail } from "@/src/lib/email/resend";
+import { buildAppUserPayload } from "@/src/lib/auth/app-user";
 import { fail, ok } from "@/src/lib/http/response";
 import { prisma } from "@/src/lib/prisma";
 import { passwordLoginSchema } from "@/src/lib/validation/auth";
@@ -66,14 +67,13 @@ export async function POST(request: NextRequest) {
 
   const tokens = await issueTokens(user);
 
+  const appUser = await buildAppUserPayload(user.id);
+  if (!appUser) {
+    return fail("User not found", 404);
+  }
+
   return ok("Login successful", {
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      isEmailVerified: user.isEmailVerified,
-    },
+    user: appUser,
     ...tokens,
   });
 }

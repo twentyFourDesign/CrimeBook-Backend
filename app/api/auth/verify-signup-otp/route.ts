@@ -2,6 +2,7 @@ import { OtpPurpose, UserStatus } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { issueTokens } from "@/src/lib/auth/session";
 import { verifyOtp } from "@/src/lib/auth/otp";
+import { buildAppUserPayload } from "@/src/lib/auth/app-user";
 import { fail, ok } from "@/src/lib/http/response";
 import { prisma } from "@/src/lib/prisma";
 import { verifySignupOtpSchema } from "@/src/lib/validation/auth";
@@ -46,14 +47,13 @@ export async function POST(request: NextRequest) {
 
   const tokens = await issueTokens(updated);
 
+  const appUser = await buildAppUserPayload(updated.id);
+  if (!appUser) {
+    return fail("User not found", 404);
+  }
+
   return ok("Email verified successfully.", {
-    user: {
-      id: updated.id,
-      email: updated.email,
-      name: updated.name,
-      role: updated.role,
-      isEmailVerified: updated.isEmailVerified,
-    },
+    user: appUser,
     ...tokens,
   });
 }

@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { getBearerToken } from "@/src/lib/auth/request";
 import { verifyAccessToken } from "@/src/lib/auth/jwt";
+import { buildAppUserPayload } from "@/src/lib/auth/app-user";
 import { fail, ok } from "@/src/lib/http/response";
-import { prisma } from "@/src/lib/prisma";
 
 export async function GET(request: NextRequest) {
   const token = getBearerToken(request);
@@ -12,16 +12,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const payload = verifyAccessToken(token);
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isEmailVerified: true,
-      },
-    });
+    const user = await buildAppUserPayload(payload.sub);
 
     if (!user) {
       return fail("User not found", 404);

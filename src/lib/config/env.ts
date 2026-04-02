@@ -12,6 +12,10 @@ const envSchema = z.object({
   OTP_EXPIRES_MINUTES: z.coerce.number().int().min(1).max(30).default(10),
   OTP_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(5),
   APP_BASE_URL: z.string().url().default("http://localhost:3000"),
+  SUPABASE_URL: z.string().url(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  /** Supabase Storage bucket for incident / verification media */
+  SUPABASE_STORAGE_BUCKET: z.string().min(1).default("crime-media"),
 });
 
 const parsed = envSchema.safeParse(process.env);
