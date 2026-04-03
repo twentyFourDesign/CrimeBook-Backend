@@ -207,6 +207,7 @@ model User {
   assignedCases           CaseAssignment[]
   evidenceUploads         Evidence[]
   fieldNotes              FieldNote[]
+  reportMessagesSent      ReportMessage[]
   // Admin actions
   moderationActions       ModerationAction[] @relation("ModeratorActions")
   moderatedReports        ModerationAction[] @relation("ModeratedReports")
@@ -458,6 +459,7 @@ model IncidentReport {
   alerts           Alert[]
   moderationActions ModerationAction[]
   statusHistory    ReportStatusHistory[]
+  reportMessages   ReportMessage[]
 
   @@index([crimeCategory])
   @@index([status])
@@ -528,6 +530,21 @@ model ReportStatusHistory {
 
   @@index([reportId])
   @@map("report_status_history")
+}
+
+/// Officer ↔ reporter chat tied to a single incident report (same thread for the linked case).
+model ReportMessage {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  reportId  String   @map("report_id") @db.Uuid
+  senderId  String   @map("sender_id") @db.Uuid
+  body      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  report IncidentReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  sender User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, createdAt])
+  @@map("report_messages")
 }
 
 // =============================================================================
