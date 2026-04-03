@@ -16,6 +16,8 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   /** Supabase Storage bucket for incident / verification media */
   SUPABASE_STORAGE_BUCKET: z.string().min(1).default("crime-media"),
+  /** Browser Maps JavaScript API key (also set in .env as NEXT_PUBLIC_GOOGLE_MAPS_API_KEY for the admin map). */
+  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().optional().default(""),
 });
 
 const parsed = envSchema.safeParse(process.env);

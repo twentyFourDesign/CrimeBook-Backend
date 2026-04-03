@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { User, UserStatus } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { prisma } from "@/src/lib/prisma";
 import { sha256 } from "@/src/lib/auth/hash";
@@ -63,6 +63,17 @@ export async function rotateRefreshToken(refreshToken: string) {
   });
 
   if (!existing) {
+    return null;
+  }
+
+  if (
+    existing.user.status === UserStatus.SUSPENDED ||
+    existing.user.status === UserStatus.DEACTIVATED
+  ) {
+    await prisma.session.update({
+      where: { id: existing.id },
+      data: { isActive: false },
+    });
     return null;
   }
 

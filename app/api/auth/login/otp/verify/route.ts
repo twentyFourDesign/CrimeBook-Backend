@@ -1,4 +1,4 @@
-import { OtpPurpose } from "@prisma/client";
+import { OtpPurpose, UserStatus } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { issueTokens } from "@/src/lib/auth/session";
 import { verifyOtp } from "@/src/lib/auth/otp";
@@ -37,6 +37,10 @@ export async function POST(request: NextRequest) {
 
   if (!user || !user.isEmailVerified) {
     return fail("Account not eligible for OTP sign in.", 401);
+  }
+
+  if (user.status === UserStatus.SUSPENDED || user.status === UserStatus.DEACTIVATED) {
+    return fail("Account is disabled", 403);
   }
 
   await prisma.user.update({
