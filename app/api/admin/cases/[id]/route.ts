@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { UserRole } from "@prisma/client";
 import { requireUser, requireRole } from "@/src/lib/auth/guard";
 import { fail, ok } from "@/src/lib/http/response";
+import { serializeCaseStatusHistory } from "@/src/lib/cases/status-history";
 import { prisma } from "@/src/lib/prisma";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -94,6 +95,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
               },
             },
           },
+        },
+        statusHistory: {
+          orderBy: { createdAt: "asc" },
         },
       },
     });
@@ -216,6 +220,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
             rank: a.officer.officerProfile?.rank ?? null,
           },
         })),
+        caseStatusHistory: serializeCaseStatusHistory(caseFile.statusHistory),
       },
     });
   } catch (e) {

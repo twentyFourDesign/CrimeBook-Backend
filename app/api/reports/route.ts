@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getBearerToken } from "@/src/lib/auth/request";
 import { verifyAccessToken } from "@/src/lib/auth/jwt";
 import { fail, ok } from "@/src/lib/http/response";
+import { awardPoints } from "@/src/lib/gamification/award";
 import { prisma } from "@/src/lib/prisma";
 
 const slugToCategory: Record<string, CrimeCategory> = {
@@ -32,7 +33,7 @@ const bodySchema = z.object({
   longitude: z.number().min(-180).max(180).nullable().optional(),
   incidentTime: z.coerce.date(),
   isHappeningNow: z.boolean().optional(),
-  isAnonymous: z.boolean(),
+  isAnonymous: z.boolean().optional(),
   /** Populated after uploading files to Supabase `crime-media` via POST /api/media/upload */
   media: z.array(reportMediaItemSchema).max(12).optional(),
 });
@@ -63,6 +64,10 @@ export async function POST(request: NextRequest) {
     return fail("User not found", 404);
   }
 
+  const privacy = await prisma.privacySettings.findUnique({
+    where: { userId: user.id },
+  });
+
   let json: unknown;
   try {
     json = await request.json();
@@ -84,8 +89,16 @@ export async function POST(request: NextRequest) {
   const lat = data.latitude ?? DEFAULT_LAT;
   const lng = data.longitude ?? DEFAULT_LNG;
 
-  const reporterId = data.isAnonymous ? null : user.id;
-  const visibility = data.isAnonymous ? ReportVisibility.ANONYMOUS : ReportVisibility.IDENTIFIED;
+  const isAnonymous = data.isAnonymous ?? privacy?.defaultAnonymousReporting ?? false;
+
+  const reporterId = isAnonymous ? null : user.id;
+  const visibility = isAnonymous ? ReportVisibility.ANONYMOUS : ReportVisibility.IDENTIFIED;
+
+  let locationPrecision: "exact" | "approximate" =
+    data.latitude == null || data.longitude == null ? "approximate" : "exact";
+  if (privacy?.locationPrecision === "approximate") {
+    locationPrecision = "approximate";
+  }
 
   const report = await prisma.$transaction(async (tx) => {
     const created = await tx.incidentReport.create({
@@ -96,12 +109,12 @@ export async function POST(request: NextRequest) {
         description: data.description,
         status: ReportStatus.SUBMITTED,
         visibility,
-        isAnonymous: data.isAnonymous,
+        isAnonymous,
         latitude: lat,
         longitude: lng,
         locationAddress: data.locationText ?? null,
         locationLabel: data.locationText ?? null,
-        locationPrecision: data.latitude == null || data.longitude == null ? "approximate" : "exact",
+        locationPrecision,
         incidentTime: data.incidentTime,
         isHappeningNow: data.isHappeningNow ?? false,
         reporterTrustScore: data.isAnonymous ? null : user.trustScore,
@@ -123,6 +136,20 @@ export async function POST(request: NextRequest) {
 
     return created;
   });
+
+  if (reporterId) {
+    const priorCount = await prisma.incidentReport.count({
+      where: { reporterId: user.id, deletedAt: null, id: { not: report.id } },
+    });
+    if (priorCount === 0) {
+      await awardPoints({
+        userId: user.id,
+        points: 10,
+        reason: "First incident report",
+        referenceId: `first_report:${user.id}`,
+      });
+    }
+  }
 
   const y = new Date().getFullYear();
   const short = report.id.replace(/-/g, "").slice(0, 6).toUpperCase();

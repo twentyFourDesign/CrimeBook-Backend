@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireUser } from "@/src/lib/auth/guard";
 import { fail, ok } from "@/src/lib/http/response";
+import { serializeCaseStatusHistory } from "@/src/lib/cases/status-history";
 import { prisma } from "@/src/lib/prisma";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const assigned = await requireAssignedCase(id, user.id);
   if (assigned.error) return assigned.error;
 
-  const [notes, evidence, suspects] = await Promise.all([
+  const [notes, evidence, suspects, caseStatusHistory] = await Promise.all([
     prisma.fieldNote.findMany({
       where: { caseId: id },
       orderBy: { createdAt: "desc" },
@@ -73,6 +74,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
         createdAt: true,
       },
     }),
+    prisma.caseStatusHistory.findMany({
+      where: { caseId: id },
+      orderBy: { createdAt: "asc" },
+    }),
   ]);
 
   return ok("Case investigation timeline", {
@@ -96,6 +101,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       alias: s.alias,
       createdAt: s.createdAt.toISOString(),
     })),
+    caseStatusHistory: serializeCaseStatusHistory(caseStatusHistory),
   });
 }
 

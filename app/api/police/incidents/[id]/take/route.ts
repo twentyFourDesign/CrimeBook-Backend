@@ -3,6 +3,7 @@ import { CaseStatus, ReportStatus, UserRole } from "@prisma/client";
 import { requireUser } from "@/src/lib/auth/guard";
 import { fail, ok } from "@/src/lib/http/response";
 import { prisma } from "@/src/lib/prisma";
+import { recordReportStatusChange } from "@/src/lib/reports/status-history";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -51,6 +52,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
           status: CaseStatus.RESPONDING,
           priority: 2,
         },
+      });
+
+      await recordReportStatusChange({
+        reportId: incident.id,
+        fromStatus: incident.status,
+        toStatus: ReportStatus.UNDER_INVESTIGATION,
+        changedById: user.id,
+        notes: "Case opened (take)",
+        tx,
       });
 
       await tx.incidentReport.update({

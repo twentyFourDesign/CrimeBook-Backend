@@ -3,6 +3,8 @@ import { CaseStatus, ReportStatus } from "@prisma/client";
 import { requireUser } from "@/src/lib/auth/guard";
 import { fail, ok } from "@/src/lib/http/response";
 import { prisma } from "@/src/lib/prisma";
+import { recordCaseStatusChange } from "@/src/lib/cases/status-history";
+import { recordReportStatusChange } from "@/src/lib/reports/status-history";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -85,30 +87,60 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (assigned.error) return assigned.error;
   const cf = assigned.caseFile!;
 
+  const linkedReport = await prisma.incidentReport.findUnique({
+    where: { id: cf.reportId },
+    select: { id: true, status: true },
+  });
+  if (!linkedReport) {
+    return fail("Report not found", 404);
+  }
+
+  let nextReportStatus: ReportStatus | null = null;
+  if (status === CaseStatus.CLOSED) {
+    nextReportStatus = ReportStatus.RESOLVED;
+  } else if (status === CaseStatus.SUSPECT_DETAINED || status === CaseStatus.SUSPECT_ARRESTED) {
+    if (linkedReport.status !== ReportStatus.RESOLVED) {
+      nextReportStatus = ReportStatus.UNDER_INVESTIGATION;
+    }
+  } else if (
+    status === CaseStatus.RESPONDING ||
+    status === CaseStatus.INVESTIGATING ||
+    status === CaseStatus.OPEN
+  ) {
+    if (linkedReport.status !== ReportStatus.RESOLVED) {
+      nextReportStatus = ReportStatus.UNDER_INVESTIGATION;
+    }
+  }
+
   await prisma.$transaction(async (tx) => {
     await tx.caseFile.update({
       where: { id: cf.id },
       data: { status },
     });
 
-    if (status === CaseStatus.CLOSED) {
+    if (cf.status !== status) {
+      await recordCaseStatusChange({
+        caseId: cf.id,
+        fromStatus: cf.status,
+        toStatus: status,
+        changedById: user.id,
+        notes: null,
+        tx,
+      });
+    }
+
+    if (nextReportStatus !== null && nextReportStatus !== linkedReport.status) {
+      await recordReportStatusChange({
+        reportId: linkedReport.id,
+        fromStatus: linkedReport.status,
+        toStatus: nextReportStatus,
+        changedById: user.id,
+        notes: `Case status: ${status}`,
+        tx,
+      });
       await tx.incidentReport.update({
-        where: { id: cf.reportId },
-        data: { status: ReportStatus.RESOLVED },
-      });
-    } else if (status === CaseStatus.SUSPECT_DETAINED || status === CaseStatus.SUSPECT_ARRESTED) {
-      await tx.incidentReport.updateMany({
-        where: { id: cf.reportId, status: { not: ReportStatus.RESOLVED } },
-        data: { status: ReportStatus.UNDER_INVESTIGATION },
-      });
-    } else if (
-      status === CaseStatus.RESPONDING ||
-      status === CaseStatus.INVESTIGATING ||
-      status === CaseStatus.OPEN
-    ) {
-      await tx.incidentReport.updateMany({
-        where: { id: cf.reportId, status: { not: ReportStatus.RESOLVED } },
-        data: { status: ReportStatus.UNDER_INVESTIGATION },
+        where: { id: linkedReport.id },
+        data: { status: nextReportStatus },
       });
     }
   });

@@ -9,7 +9,8 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "analytics:compute": "npx tsx scripts/compute-analytics.ts"
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
@@ -34,6 +35,7 @@
     "eslint-config-next": "16.2.2",
     "prisma": "6.19.3",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }
