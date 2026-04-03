@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { EvidenceType } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { requireUser } from "@/src/lib/auth/guard";
 import { fail, ok } from "@/src/lib/http/response";
@@ -50,10 +51,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return fail("evidenceType is required", 400);
   }
 
-  const allowedTypes = new Set(["BODYCAM", "PHOTO", "VIDEO", "STATEMENT", "DOCUMENT", "OTHER"]);
+  const allowedTypes = new Set<string>(Object.values(EvidenceType));
   if (!allowedTypes.has(input.evidenceType)) {
     return fail("Invalid evidenceType", 400);
   }
+  const evidenceType = input.evidenceType as EvidenceType;
 
   const caseFile = await prisma.caseFile.findUnique({
     where: { id },
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     data: {
       caseId: id,
       uploadedById: user.id,
-      evidenceType: input.evidenceType,
+      evidenceType,
       fileUrl: input.fileUrl.trim(),
       fileName: input.fileName.trim(),
       fileSizeBytes: Math.max(0, Math.round(input.fileSizeBytes)),
