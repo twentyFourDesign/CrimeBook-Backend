@@ -1,4 +1,3 @@
-import { OnboardingIntent, UserRole, VerificationStatus } from "@prisma/client";
 import { prisma } from "@/src/lib/prisma";
 
 export type AppUserPayload = {
@@ -8,17 +7,27 @@ export type AppUserPayload = {
   avatarUrl: string | null;
   phone: string | null;
   city: string | null;
-  role: UserRole;
+  role:
+    | "CITIZEN"
+    | "VERIFIED_COMMUNITY_MEMBER"
+    | "POLICE_OFFICER"
+    | "POLICE_COMMAND"
+    | "ENTERPRISE_SECURITY"
+    | "SYSTEM_ADMIN";
   isEmailVerified: boolean;
-  onboardingIntent: OnboardingIntent | null;
+  onboardingIntent: "STANDARD_CITIZEN" | "VERIFIED_COMMUNITY" | "POLICE" | null;
   identityVerificationStatus: "none" | "pending" | "approved" | "rejected";
   communityVerification: {
-    status: VerificationStatus;
+    status: "PENDING" | "APPROVED" | "REJECTED";
     submittedAt: string;
   } | null;
   policeApplication: {
-    status: VerificationStatus;
+    status: "PENDING" | "APPROVED" | "REJECTED";
     submittedAt: string;
+  } | null;
+  officerLocation?: {
+    latitude: number | null;
+    longitude: number | null;
   } | null;
 };
 
@@ -47,6 +56,12 @@ export async function buildAppUserPayload(userId: string): Promise<AppUserPayloa
           submittedAt: true,
         },
       },
+      officerProfile: {
+        select: {
+          currentLatitude: true,
+          currentLongitude: true,
+        },
+      },
     },
   });
 
@@ -54,25 +69,25 @@ export async function buildAppUserPayload(userId: string): Promise<AppUserPayloa
 
   let identityVerificationStatus: AppUserPayload["identityVerificationStatus"];
 
-  if (user.role === UserRole.VERIFIED_COMMUNITY_MEMBER) {
+  if (user.role === "VERIFIED_COMMUNITY_MEMBER") {
     identityVerificationStatus = "approved";
   } else if (!user.communityVerification) {
     identityVerificationStatus = "none";
-  } else {
-    switch (user.communityVerification.verificationStatus) {
-      case VerificationStatus.PENDING:
-        identityVerificationStatus = "pending";
-        break;
-      case VerificationStatus.APPROVED:
-        identityVerificationStatus = "approved";
-        break;
-      case VerificationStatus.REJECTED:
-        identityVerificationStatus = "rejected";
-        break;
-      default:
-        identityVerificationStatus = "none";
-    }
-  }
+      } else {
+        switch (user.communityVerification.verificationStatus) {
+          case "PENDING":
+            identityVerificationStatus = "pending";
+            break;
+          case "APPROVED":
+            identityVerificationStatus = "approved";
+            break;
+          case "REJECTED":
+            identityVerificationStatus = "rejected";
+            break;
+          default:
+            identityVerificationStatus = "none";
+        }
+      }
 
   return {
     id: user.id,
@@ -95,6 +110,12 @@ export async function buildAppUserPayload(userId: string): Promise<AppUserPayloa
       ? {
           status: user.policeOfficerApplication.verificationStatus,
           submittedAt: user.policeOfficerApplication.submittedAt.toISOString(),
+        }
+      : null,
+    officerLocation: user.officerProfile
+      ? {
+          latitude: user.officerProfile.currentLatitude,
+          longitude: user.officerProfile.currentLongitude,
         }
       : null,
   };
