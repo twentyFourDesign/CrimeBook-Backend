@@ -15,20 +15,26 @@ export async function GET(request: NextRequest) {
     take: 50,
     select: {
       id: true,
+      caseId: true,
       crimeCategory: true,
       title: true,
       status: true,
       description: true,
       createdAt: true,
+      updatedAt: true,
+      latitude: true,
+      longitude: true,
       locationAddress: true,
       locationLabel: true,
+      isPoliceVerified: true,
     },
   });
 
   return ok("Your reports", {
-    reports: reports.map((r) => ({
+    reports: reports.map((r: (typeof reports)[number]) => ({
       ...r,
       createdAt: r.createdAt.toISOString(),
+      updatedAt: r.updatedAt.toISOString(),
     })),
   });
 }

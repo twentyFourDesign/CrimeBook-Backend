@@ -33,6 +33,58 @@ export async function GET(request: NextRequest, context: RouteContext) {
           createdAt: true,
         },
       },
+      caseFile: {
+        select: {
+          assignments: {
+            where: { removedAt: null },
+            orderBy: [{ isLead: "desc" }, { assignedAt: "asc" }],
+            take: 1,
+            select: {
+              officer: {
+                select: {
+                  name: true,
+                  officerProfile: { select: { badgeNumber: true } },
+                },
+              },
+            },
+          },
+          suspects: {
+            orderBy: { createdAt: "desc" },
+            take: 5,
+            select: {
+              id: true,
+              description: true,
+              alias: true,
+              createdAt: true,
+            },
+          },
+          fieldNotes: {
+            orderBy: { createdAt: "desc" },
+            take: 10,
+            select: {
+              id: true,
+              content: true,
+              noteType: true,
+              createdAt: true,
+              officer: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          evidence: {
+            orderBy: { capturedAt: "asc" },
+            select: {
+              id: true,
+              fileUrl: true,
+              fileName: true,
+              evidenceType: true,
+              capturedAt: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -65,6 +117,35 @@ export async function GET(request: NextRequest, context: RouteContext) {
         ...m,
         createdAt: m.createdAt.toISOString(),
       })),
+      assignedOfficer: report.caseFile?.assignments[0]
+        ? {
+            name: report.caseFile.assignments[0].officer.name,
+            badgeNumber: report.caseFile.assignments[0].officer.officerProfile?.badgeNumber ?? null,
+          }
+        : null,
+      suspectTags:
+        report.caseFile?.suspects.map((s) => ({
+          id: s.id,
+          description: s.description,
+          alias: s.alias,
+          createdAt: s.createdAt.toISOString(),
+        })) ?? [],
+      policeNotes:
+        report.caseFile?.fieldNotes.map((n) => ({
+          id: n.id,
+          content: n.content,
+          noteType: n.noteType,
+          officerName: n.officer.name,
+          createdAt: n.createdAt.toISOString(),
+        })) ?? [],
+      policeMedia:
+        report.caseFile?.evidence.map((e) => ({
+          id: e.id,
+          fileUrl: e.fileUrl,
+          fileName: e.fileName,
+          evidenceType: e.evidenceType,
+          capturedAt: e.capturedAt.toISOString(),
+        })) ?? [],
     },
   });
 }
