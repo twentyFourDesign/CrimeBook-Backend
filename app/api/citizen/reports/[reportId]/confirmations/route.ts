@@ -136,6 +136,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
         reason: "Community report confirmation",
         referenceId: `report_confirm:${reportId}:${user.id}`,
       });
+
+      // Award Badges
+      const { awardBadgeIfEligible } = await import("@/src/lib/gamification/badges");
+      const myConfirmCount = await prisma.reportConfirmation.count({
+        where: { userId: user.id, isConfirmed: true },
+      });
+
+      let newBadge: object | null | undefined = null;
+      if (myConfirmCount === 1) {
+        const res = await awardBadgeIfEligible(user.id, "CONFIRMED_1_REPORT");
+        if (res.awarded && "badge" in res) newBadge = res.badge;
+      } else if (myConfirmCount === 10) {
+        const res = await awardBadgeIfEligible(user.id, "CONFIRMED_10_REPORTS");
+        if (res.awarded && "badge" in res) newBadge = res.badge;
+      }
+
+      return ok("Confirmation saved", {
+        communityConfirmCount: result.communityConfirmCount,
+        newBadge,
+      });
     }
 
     return ok("Confirmation saved", {

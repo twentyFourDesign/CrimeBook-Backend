@@ -97,7 +97,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   let nextReportStatus: ReportStatus | null = null;
   if (status === CaseStatus.CLOSED) {
-    nextReportStatus = ReportStatus.RESOLVED;
+    nextReportStatus = "POLICE_RESOLVED" as ReportStatus;
   } else if (status === CaseStatus.SUSPECT_DETAINED || status === CaseStatus.SUSPECT_ARRESTED) {
     if (linkedReport.status !== ReportStatus.RESOLVED) {
       nextReportStatus = ReportStatus.UNDER_INVESTIGATION;
@@ -142,6 +142,23 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         where: { id: linkedReport.id },
         data: { status: nextReportStatus },
       });
+    }
+
+    if (status === CaseStatus.CLOSED) {
+      // Award officer badges
+      const { awardBadgeIfEligible } = await import("@/src/lib/gamification/badges");
+      const solvedCount = await tx.caseFile.count({
+        where: {
+          assignments: { some: { officerId: user.id } },
+          status: CaseStatus.CLOSED,
+        },
+      });
+
+      if (solvedCount === 1) {
+        await awardBadgeIfEligible(user.id, "SOLVED_1_CASE");
+      } else if (solvedCount === 10) {
+        await awardBadgeIfEligible(user.id, "SOLVED_10_CASES");
+      }
     }
   });
 

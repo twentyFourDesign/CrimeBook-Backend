@@ -3,7 +3,6 @@ import { prisma } from "@/src/lib/prisma";
 
 const MAX_REPUTATION_POINTS = 50_000;
 
-type Tx = Prisma.TransactionClient | typeof prisma;
 
 /**
  * Idempotent reward: same `referenceId` will not double-award for a user.

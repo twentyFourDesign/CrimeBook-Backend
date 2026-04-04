@@ -1,0 +1,24 @@
+
+> crime-backend@0.1.0 lint
+> eslint
+
+
+/Users/vishumacm2/Desktop/crime_reporting/crime-backend/app/api/citizen/reports/[reportId]/confirmations/route.ts
+  146:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/vishumacm2/Desktop/crime_reporting/crime-backend/app/api/citizen/reports/[reportId]/resolve/route.ts
+  59:11  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  63:33  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  70:33  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+/Users/vishumacm2/Desktop/crime_reporting/crime-backend/app/api/police/cases/[id]/route.ts
+  100:5  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+/Users/vishumacm2/Desktop/crime_reporting/crime-backend/app/api/reports/route.ts
+  140:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/vishumacm2/Desktop/crime_reporting/crime-backend/src/lib/gamification/award.ts
+  6:6  warning  'Tx' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 7 problems (6 errors, 1 warning)
+

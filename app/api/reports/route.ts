@@ -137,11 +137,19 @@ export async function POST(request: NextRequest) {
     return created;
   });
 
+  let newBadge: object | null | undefined = null;
   if (reporterId) {
+    const { awardBadgeIfEligible } = await import("@/src/lib/gamification/badges");
+    const badgeRes = await awardBadgeIfEligible(user.id, "SUBMITTED_1_REPORT");
+    if (badgeRes.awarded && "badge" in badgeRes) {
+      newBadge = badgeRes.badge;
+    }
+
     const priorCount = await prisma.incidentReport.count({
       where: { reporterId: user.id, deletedAt: null, id: { not: report.id } },
     });
     if (priorCount === 0) {
+      // Award points
       await awardPoints({
         userId: user.id,
         points: 10,
@@ -161,5 +169,6 @@ export async function POST(request: NextRequest) {
       displayCaseId,
       status: report.status,
     },
+    newBadge,
   });
 }

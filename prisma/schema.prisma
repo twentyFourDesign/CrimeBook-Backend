@@ -61,6 +61,7 @@ enum ReportStatus {
   COMMUNITY_CONFIRMED
   POLICE_VERIFIED
   UNDER_INVESTIGATION
+  POLICE_RESOLVED     // Added: Police claim solved, waiting for reporter
   RESOLVED
   REJECTED
   ARCHIVED
@@ -158,6 +159,12 @@ enum InviteStatus {
   PENDING
   ACCEPTED
   DECLINED
+}
+
+enum ReporterResolutionStatus {
+  PENDING
+  CONFIRMED
+  DISPUTED
 }
 
 // =============================================================================
@@ -458,6 +465,11 @@ model IncidentReport {
   createdAt        DateTime         @default(now()) @map("created_at")
   updatedAt        DateTime         @updatedAt @map("updated_at")
   deletedAt        DateTime?        @map("deleted_at")
+
+  // Resolution confirmation
+  reporterConfirmedAt      DateTime?              @map("reporter_confirmed_at")
+  reporterResolutionStatus ReporterResolutionStatus @default(PENDING) @map("reporter_resolution_status")
+  reporterResolutionNotes  String?                @map("reporter_resolution_notes")
 
   // Relations
   reporter         User?            @relation(fields: [reporterId], references: [id], onDelete: SetNull)
