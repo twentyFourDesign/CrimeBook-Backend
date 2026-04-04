@@ -21,7 +21,8 @@ async function retroactiveAward() {
     if (res.awarded) {
       console.log(`Successfully awarded badge to ${user.email}`);
     } else {
-      console.log(`Failed to award badge to ${user.email}: ${res.error || res.message}`);
+      const errorMsg = (res as any).error || (res as any).message || "Unknown reason";
+      console.log(`Failed to award badge to ${user.email}: ${errorMsg}`);
     }
   }
 
