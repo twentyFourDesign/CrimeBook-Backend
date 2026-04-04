@@ -52,7 +52,7 @@ export async function awardBadgeIfEligible(userId: string, criteria: string) {
           userId,
           points: badge.pointsValue,
           reason: `Earned Badge: ${badge.name}`,
-          referenceId: `badge_award:${userBadge.id}`,
+          referenceId: `badge_award:${userId}:${badge.id}`,
           tx,
         });
       }
