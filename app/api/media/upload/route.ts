@@ -3,7 +3,7 @@ import { requireUser } from "@/src/lib/auth/guard";
 import { fail, ok } from "@/src/lib/http/response";
 import { uploadToCrimeMediaBucket, type UploadFolder } from "@/src/lib/storage/crime-media";
 
-const FOLDERS = new Set<string>(["reports", "verification", "avatars"]);
+const FOLDERS = new Set<string>(["reports", "verification", "avatars", "community"]);
 
 export const runtime = "nodejs";
 

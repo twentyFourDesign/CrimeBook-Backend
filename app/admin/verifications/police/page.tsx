@@ -89,11 +89,7 @@ export default function AdminPoliceVerificationsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Police onboarding</h1>
-        <p className="mt-1 text-sm text-slate-600">Review officer applications and badge details.</p>
-      </div>
+    <div className="space-y-4">
 
       <div className="flex flex-wrap items-center gap-3">
         <label className="text-sm font-medium text-slate-700">

@@ -85,11 +85,7 @@ export default function AdminCommunityVerificationsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Community verification</h1>
-        <p className="mt-1 text-sm text-slate-600">Review citizen identity documents.</p>
-      </div>
+    <div className="space-y-4">
 
       <div className="flex flex-wrap items-center gap-3">
         <label className="text-sm font-medium text-slate-700">

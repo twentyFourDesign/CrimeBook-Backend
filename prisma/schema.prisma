@@ -218,6 +218,7 @@ model User {
   moderationActions       ModerationAction[] @relation("ModeratorActions")
   moderatedReports        ModerationAction[] @relation("ModeratedReports")
   invitesSent             GroupInvite[]      @relation("InvitesSent")
+  groupMessages           CommunityGroupMessage[]
 
   @@index([email])
   @@index([username])
@@ -864,6 +865,7 @@ model CommunityGroup {
   members CommunityGroupMember[]
   posts   CommunityPost[]
   invites GroupInvite[]
+  messages CommunityGroupMessage[]
 
   @@index([latitude, longitude])
   @@map("community_groups")
@@ -898,9 +900,27 @@ model CommunityPost {
 
   group  CommunityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   author User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  media  CommunityPostMedia[]
 
   @@index([groupId, createdAt])
   @@map("community_posts")
+}
+
+model CommunityPostMedia {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  postId       String    @map("post_id") @db.Uuid
+  mediaType    MediaType @map("media_type")
+  fileUrl      String    @map("file_url")
+  fileName     String    @map("file_name")
+  fileSizeBytes Int      @map("file_size_bytes")
+  mimeType     String    @map("mime_type")
+  durationSecs Int?      @map("duration_secs")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@map("community_post_media")
 }
 
 model GroupInvite {
@@ -917,6 +937,20 @@ model GroupInvite {
 
   @@unique([groupId, email])
   @@map("group_invites")
+}
+
+model CommunityGroupMessage {
+  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  groupId   String   @map("group_id") @db.Uuid
+  senderId  String   @map("sender_id") @db.Uuid
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  group  CommunityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  sender User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt])
+  @@map("community_group_messages")
 }
 
 // Missing persons

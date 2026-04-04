@@ -14,8 +14,7 @@ const sections: {
   {
     title: "Verifications",
     items: [
-      { href: "/admin/verifications/community", label: "Community", icon: "check" },
-      { href: "/admin/verifications/police", label: "Police onboarding", icon: "shield" },
+      { href: "/admin/verifications", label: "User Verifications", icon: "check" },
     ],
   },
   {
