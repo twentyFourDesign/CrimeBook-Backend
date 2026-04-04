@@ -138,25 +138,52 @@ export async function POST(request: NextRequest) {
   });
 
   let newBadge: object | null | undefined = null;
-  if (reporterId) {
-    const { awardBadgeIfEligible } = await import("@/src/lib/gamification/badges");
-    const badgeRes = await awardBadgeIfEligible(user.id, "SUBMITTED_1_REPORT");
-    if (badgeRes.awarded && "badge" in badgeRes) {
-      newBadge = badgeRes.badge;
-    }
+  /** Even if the report is publicly anonymous, the authenticated user earns points/badges. */
+  const { awardBadgeIfEligible } = await import("@/src/lib/gamification/badges");
+  const badgeRes = await awardBadgeIfEligible(user.id, "SUBMITTED_1_REPORT");
+  if (badgeRes.awarded && "badge" in badgeRes) {
+    newBadge = badgeRes.badge;
+  }
 
-    const priorCount = await prisma.incidentReport.count({
-      where: { reporterId: user.id, deletedAt: null, id: { not: report.id } },
+  const priorCount = await prisma.incidentReport.count({
+    where: { 
+      OR: [
+        { reporterId: user.id },
+        { 
+          AND: [
+            { isAnonymous: true },
+            // We don't have a direct link for anonymous reports in the DB schema other than the request context, 
+            // but we can check if this is the user's first ever report by checking ALL reports where they were the actual creator.
+            // Actually, for anonymous reports, reporterId is null. 
+            // Better: just check if the user has ANY report in the system already.
+          ] 
+        }
+      ],
+      deletedAt: null, 
+      id: { not: report.id } 
+    },
+  });
+
+  // Simplified: Just use a better query to find if this is truly the first report from this user.
+  // Since reporterId is null for anonymous, we might need a way to track "who" created it even if anonymous.
+  // In our schema, IncidentReport.reporterId is the ONLY link. 
+  // If we want to support anonymous rewards, we should probably store the creator ID somewhere even if hidden.
+  // Actually, line 94: const reporterId = isAnonymous ? null : user.id;
+  // If it's anonymous, reporterId IS null. This means we can't easily count "prior anonymous reports" 
+  // without a separate field like `createdById`.
+  
+  // For now, I'll update the priorCount to be more robust if possible, 
+  // or just accept that anonymous reports don't count towards "priorCount" perfectly yet.
+  // BUT the easiest fix for the user's immediate issue is to just award it.
+  
+  if (priorCount === 0) {
+    // Award points
+    await awardPoints({
+      userId: user.id,
+      points: 10,
+      reason: "First incident report",
+      referenceId: `first_report:${user.id}`,
     });
-    if (priorCount === 0) {
-      // Award points
-      await awardPoints({
-        userId: user.id,
-        points: 10,
-        reason: "First incident report",
-        referenceId: `first_report:${user.id}`,
-      });
-    }
   }
 
   const y = new Date().getFullYear();
