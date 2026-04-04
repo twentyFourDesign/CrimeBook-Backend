@@ -154,6 +154,12 @@ enum EvidenceType {
   OTHER
 }
 
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 // =============================================================================
 // AUTH & USER MANAGEMENT
 // =============================================================================
@@ -211,6 +217,7 @@ model User {
   // Admin actions
   moderationActions       ModerationAction[] @relation("ModeratorActions")
   moderatedReports        ModerationAction[] @relation("ModeratedReports")
+  invitesSent             GroupInvite[]      @relation("InvitesSent")
 
   @@index([email])
   @@index([username])
@@ -856,6 +863,7 @@ model CommunityGroup {
 
   members CommunityGroupMember[]
   posts   CommunityPost[]
+  invites GroupInvite[]
 
   @@index([latitude, longitude])
   @@map("community_groups")
@@ -893,6 +901,22 @@ model CommunityPost {
 
   @@index([groupId, createdAt])
   @@map("community_posts")
+}
+
+model GroupInvite {
+  id        String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  groupId   String       @map("group_id") @db.Uuid
+  inviterId String       @map("inviter_id") @db.Uuid
+  email     String
+  status    InviteStatus @default(PENDING)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  group   CommunityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  inviter User           @relation("InvitesSent", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, email])
+  @@map("group_invites")
 }
 
 // Missing persons

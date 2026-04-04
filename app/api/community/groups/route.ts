@@ -103,7 +103,14 @@ export async function POST(request: NextRequest) {
       group: {
         id: group.id,
         name: group.name,
+        description: group.description,
+        avatarUrl: group.avatarUrl,
+        latitude: group.latitude,
+        longitude: group.longitude,
+        radiusKm: group.radiusKm,
         memberCount: group.memberCount,
+        createdAt: group.createdAt.toISOString(),
+        isMember: true,
       },
     });
   } catch (e) {

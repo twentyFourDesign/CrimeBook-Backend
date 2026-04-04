@@ -42,6 +42,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       memberCount: group.memberCount,
       createdAt: group.createdAt.toISOString(),
       myRole: membership?.role ?? null,
+      isMember: !!membership,
     },
   });
 }
