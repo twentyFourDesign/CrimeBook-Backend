@@ -77,6 +77,7 @@ export async function GET(request: NextRequest) {
       description: true,
       communityConfirmCount: true,
       isPoliceVerified: true,
+      credibilityScore: true,
     },
   });
 
@@ -93,6 +94,7 @@ export async function GET(request: NextRequest) {
       description: r.description,
       communityConfirmCount: r.communityConfirmCount,
       isPoliceVerified: r.isPoliceVerified,
+      credibilityScore: r.credibilityScore,
     })),
   });
 }

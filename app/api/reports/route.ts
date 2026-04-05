@@ -100,10 +100,31 @@ export async function POST(request: NextRequest) {
     locationPrecision = "approximate";
   }
 
+  let credibilityScore = 50;
+  if (data.media?.length) credibilityScore += 20;
+  if (user.role === "VERIFIED_COMMUNITY_MEMBER" || user.role === "POLICE_OFFICER" || user.role === "POLICE_COMMAND") {
+    credibilityScore += 15;
+  }
+  if (!data.title || !data.locationText || data.description.length < 20) {
+    credibilityScore -= 20;
+  }
+
+  // Check for other reports nearby in the last 24h
+  const nearbyReports = await prisma.incidentReport.count({
+    where: {
+      latitude: { gte: lat - 0.01, lte: lat + 0.01 },
+      longitude: { gte: lng - 0.01, lte: lng + 0.01 },
+      incidentTime: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+    }
+  });
+  if (nearbyReports > 0) {
+    credibilityScore += 20;
+  }
+
   const report = await prisma.$transaction(async (tx) => {
     const created = await tx.incidentReport.create({
       data: {
-        reporterId,
+        ...(reporterId ? { reporter: { connect: { id: reporterId } } } : {}),
         crimeCategory,
         title: data.title ?? null,
         description: data.description,
@@ -118,6 +139,7 @@ export async function POST(request: NextRequest) {
         incidentTime: data.incidentTime,
         isHappeningNow: data.isHappeningNow ?? false,
         reporterTrustScore: data.isAnonymous ? null : user.trustScore,
+        credibilityScore,
       },
     });
 

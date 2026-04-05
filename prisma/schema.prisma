@@ -444,6 +444,7 @@ model IncidentReport {
   reporterTrustScore Float?         @map("reporter_trust_score")   // snapshot at time of report
   communityConfirmCount Int          @default(0) @map("community_confirm_count")
   isPoliceVerified Boolean          @default(false) @map("is_police_verified")
+  credibilityScore Int              @default(50) @map("credibility_score")
   verifiedAt       DateTime?        @map("verified_at")
   verifiedById     String?          @map("verified_by_id") @db.Uuid
 

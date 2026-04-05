@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
       longitude: true,
       communityConfirmCount: true,
       isPoliceVerified: true,
+      credibilityScore: true,
     },
   });
 
