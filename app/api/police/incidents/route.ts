@@ -14,10 +14,57 @@ export async function GET(request: NextRequest) {
     return fail("Forbidden", 403);
   }
 
+  const searchParams = request.nextUrl.searchParams;
+  const time = searchParams.get("time");
+  const neParam = searchParams.get("ne");
+  const swParam = searchParams.get("sw");
+  const statusParam = searchParams.get("status") || "active";
+  const categoryParam = searchParams.get("category") || "all";
+
+  let gteDate: Date | undefined;
+  if (time === "6h") {
+    gteDate = new Date(Date.now() - 6 * 60 * 60 * 1000);
+  } else if (time === "24h") {
+    gteDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  } else if (time === "7d") {
+    gteDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  }
+
+  let boundsFilter = {};
+  if (neParam && swParam) {
+    const [neLat, neLng] = neParam.split(",").map(Number);
+    const [swLat, swLng] = swParam.split(",").map(Number);
+    if (!isNaN(neLat) && !isNaN(swLat) && !isNaN(neLng) && !isNaN(swLng)) {
+      boundsFilter = {
+        latitude: { gte: swLat, lte: neLat },
+        longitude: { gte: swLng, lte: neLng },
+      };
+    }
+  }
+
+  let statusFilter = {};
+  if (statusParam === "active") {
+    statusFilter = { in: ["SUBMITTED", "COMMUNITY_CONFIRMED", "POLICE_VERIFIED", "UNDER_INVESTIGATION"] };
+  } else if (statusParam === "solved") {
+    statusFilter = { in: ["POLICE_RESOLVED", "RESOLVED"] };
+  } else if (statusParam !== "all") {
+    statusFilter = { equals: statusParam.toUpperCase() };
+  }
+
+  let categoryFilter = {};
+  if (categoryParam && categoryParam !== "all") {
+    categoryFilter = categoryParam.toUpperCase();
+  }
+
   const incidents = await prisma.incidentReport.findMany({
-    // latitude/longitude are non-nullable on IncidentReport, so no need for a where filter
+    where: {
+      ...(gteDate ? { createdAt: { gte: gteDate } } : {}),
+      ...boundsFilter,
+      ...(Object.keys(statusFilter).length > 0 ? { status: statusFilter } : {}),
+      ...(Object.keys(categoryFilter).length > 0 ? { crimeCategory: categoryFilter } : {}),
+    },
     orderBy: { createdAt: "desc" },
-    take: 500,
+    take: 1000,
     select: {
       id: true,
       crimeCategory: true,
