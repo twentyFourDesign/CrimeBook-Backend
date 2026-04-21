@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useAdminSession } from "../../_lib/admin-session";
+import { ForensicDashboard } from "../../_components/ForensicDashboard";
 
 function fmt(s: string) {
   return s.replace(/_/g, " ");
@@ -59,6 +60,7 @@ type CaseDetail = {
       createdAt: string;
       sender: { name: string; email: string; role: string };
     }[];
+    authenticityAnalysis?: any;
   };
   evidence: {
     id: string;
@@ -208,6 +210,12 @@ export default function AdminCaseDetailPage() {
       {data.notes ? (
         <Section title="Case notes (internal)">
           <p className="whitespace-pre-wrap text-sm text-slate-800">{data.notes}</p>
+        </Section>
+      ) : null}
+
+      {rep.authenticityAnalysis ? (
+        <Section title="AI Forensic Intelligence">
+          <ForensicDashboard analysis={rep.authenticityAnalysis} />
         </Section>
       ) : null}
 

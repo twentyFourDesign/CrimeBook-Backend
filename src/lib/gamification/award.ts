@@ -47,10 +47,29 @@ export async function awardPoints(params: {
     });
     if (!u) return;
     const next = Math.min(MAX_REPUTATION_POINTS, Math.max(0, u.reputationPoints + points));
+    
+    // Trust score logic: Incremental gain based on activity (reputation points)
+    // Here we add 0.5% trust for every 10 reputation points awarded, capped at 100.0
+    const trustGain = Math.max(0, points * 0.05); 
+    
     await tx.user.update({
       where: { id: userId },
-      data: { reputationPoints: next },
+      data: { 
+        reputationPoints: next,
+        trustScore: {
+          increment: trustGain
+        }
+      },
     });
+    
+    // Cap trust score at 100.0
+    const updatedUser = await tx.user.findUnique({ where: { id: userId }, select: { trustScore: true } });
+    if (updatedUser && updatedUser.trustScore > 100) {
+      await tx.user.update({
+        where: { id: userId },
+        data: { trustScore: 100.0 }
+      });
+    }
   };
 
   if (params.tx) {

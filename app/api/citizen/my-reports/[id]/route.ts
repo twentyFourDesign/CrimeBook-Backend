@@ -19,7 +19,27 @@ export async function GET(request: NextRequest, context: RouteContext) {
       id,
       reporterId: user.id,
     },
-    include: {
+    select: {
+      id: true,
+      caseId: true,
+      crimeCategory: true,
+      title: true,
+      description: true,
+      status: true,
+      visibility: true,
+      isAnonymous: true,
+      latitude: true,
+      longitude: true,
+      locationAddress: true,
+      locationLabel: true,
+      locationPrecision: true,
+      incidentTime: true,
+      isHappeningNow: true,
+      communityConfirmCount: true,
+      isPoliceVerified: true,
+      createdAt: true,
+      updatedAt: true,
+      authenticityAnalysis: true,
       media: {
         orderBy: { createdAt: "asc" },
         select: {
@@ -151,6 +171,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           capturedAt: e.capturedAt.toISOString(),
         })) ?? [],
       statusHistory: serializeReportStatusHistory(report.statusHistory),
+      authenticityAnalysis: report.authenticityAnalysis ?? null,
     },
   });
 }

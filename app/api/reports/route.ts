@@ -36,6 +36,7 @@ const bodySchema = z.object({
   isAnonymous: z.boolean().optional(),
   /** Populated after uploading files to Supabase `crime-media` via POST /api/media/upload */
   media: z.array(reportMediaItemSchema).max(12).optional(),
+  authenticityAnalysis: z.any().optional(),
 });
 
 /** Default map pin (Lagos) if client sends no coords — location still stored as text. */
@@ -140,6 +141,7 @@ export async function POST(request: NextRequest) {
         isHappeningNow: data.isHappeningNow ?? false,
         reporterTrustScore: data.isAnonymous ? null : user.trustScore,
         credibilityScore,
+        authenticityAnalysis: data.authenticityAnalysis ?? null,
       },
     });
 

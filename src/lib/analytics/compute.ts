@@ -31,8 +31,22 @@ export async function runAnalyticsComputation(): Promise<{
 
   const hotspotBuckets = new Map<
     string,
-    { lat: number; lng: number; category: CrimeCategory | null; count: number }
+    { lat: number; lng: number; category: CrimeCategory | null; count: number; totalWeight: number }
   >();
+
+  const CATEGORY_WEIGHTS: Record<CrimeCategory, number> = {
+    [CrimeCategory.KIDNAPPING]: 25,
+    [CrimeCategory.ASSAULT]: 20,
+    [CrimeCategory.ROBBERY]: 20,
+    [CrimeCategory.DOMESTIC_VIOLENCE]: 18,
+    [CrimeCategory.DRUG_ACTIVITY]: 12,
+    [CrimeCategory.FRAUD]: 10,
+    [CrimeCategory.MISSING_PERSON]: 8,
+    [CrimeCategory.SUSPICIOUS_ACTIVITY]: 5,
+    [CrimeCategory.VANDALISM]: 5,
+    [CrimeCategory.TRAFFIC_CRIME]: 3,
+    [CrimeCategory.OTHER]: 2,
+  };
 
   const patternBuckets = new Map<
     string,
@@ -50,15 +64,21 @@ export async function runAnalyticsComputation(): Promise<{
     const lat = Math.round(r.latitude * 10 ** GRID) / 10 ** GRID;
     const lng = Math.round(r.longitude * 10 ** GRID) / 10 ** GRID;
     const hk = `${lat}_${lng}_${r.crimeCategory}`;
+    const weight = CATEGORY_WEIGHTS[r.crimeCategory] || 5;
+
     const prev = hotspotBuckets.get(hk);
-    if (prev) prev.count += 1;
-    else
+    if (prev) {
+      prev.count += 1;
+      prev.totalWeight += weight;
+    } else {
       hotspotBuckets.set(hk, {
         lat,
         lng,
         category: r.crimeCategory,
         count: 1,
+        totalWeight: weight,
       });
+    }
 
     const t = new Date(r.incidentTime);
     const day = t.getUTCDay();
@@ -82,7 +102,8 @@ export async function runAnalyticsComputation(): Promise<{
   }
 
   for (const [, v] of hotspotBuckets) {
-    const risk = Math.min(100, v.count * 8);
+    // Risk score is a function of weight and density, capped at 100
+    const risk = Math.min(100, v.totalWeight + (v.count - 1) * 5);
     await prisma.crimeHotspot.create({
       data: {
         latitude: v.lat,

@@ -21,7 +21,27 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   const report = await prisma.incidentReport.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      caseId: true,
+      crimeCategory: true,
+      title: true,
+      description: true,
+      status: true,
+      visibility: true,
+      isAnonymous: true,
+      latitude: true,
+      longitude: true,
+      locationAddress: true,
+      locationLabel: true,
+      locationPrecision: true,
+      incidentTime: true,
+      isHappeningNow: true,
+      communityConfirmCount: true,
+      isPoliceVerified: true,
+      createdAt: true,
+      updatedAt: true,
+      authenticityAnalysis: true,
       media: {
         orderBy: { createdAt: "asc" },
         select: {
@@ -79,6 +99,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       })),
       caseNumber: report.caseFile?.caseNumber ?? null,
       statusHistory: serializeReportStatusHistory(report.statusHistory),
+      authenticityAnalysis: report.authenticityAnalysis ?? null,
     },
   });
 }

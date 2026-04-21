@@ -453,6 +453,7 @@ model IncidentReport {
   aiConfidenceScore   Float?         @map("ai_confidence_score")
   aiBiasFlag          Boolean        @default(false) @map("ai_bias_flag")
   aiBiasFlagReason    String?        @map("ai_bias_flag_reason")
+  authenticityAnalysis Json?         @map("authenticity_analysis")
 
   // Cold case matching
   coldCaseMatchId  String?          @map("cold_case_match_id") @db.Uuid
