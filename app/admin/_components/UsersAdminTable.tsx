@@ -132,19 +132,19 @@ export function UsersAdminTable({ title, description, fixedRoles }: Props) {
         <p className="mt-1 text-sm text-slate-600">{description}</p>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         {!fixedRoles ? (
-          <label className="text-sm font-medium text-slate-700">
+          <label className="flex flex-1 flex-col gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 sm:flex-none">
             Role
             <select
-              className="ml-2 block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900"
+              className="block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-900"
               value={role}
               onChange={(e) => {
                 setPage(1);
                 setRole(e.target.value);
               }}
             >
-              <option value="">All</option>
+              <option value="">All Roles</option>
               {USER_ROLES.map((r: (typeof USER_ROLES)[number]) => (
                 <option key={r} value={r}>
                   {r.replace(/_/g, " ")}
@@ -153,17 +153,17 @@ export function UsersAdminTable({ title, description, fixedRoles }: Props) {
             </select>
           </label>
         ) : null}
-        <label className="text-sm font-medium text-slate-700">
+        <label className="flex flex-1 flex-col gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 sm:flex-none">
           Status
           <select
-            className="ml-2 block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900"
+            className="block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-900"
             value={status}
             onChange={(e) => {
               setPage(1);
               setStatus(e.target.value);
             }}
           >
-            <option value="">All</option>
+            <option value="">All Statuses</option>
             {USER_STATUSES.map((s) => (
               <option key={s} value={s}>
                 {s.replace(/_/g, " ")}
@@ -171,10 +171,10 @@ export function UsersAdminTable({ title, description, fixedRoles }: Props) {
             ))}
           </select>
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="flex w-full flex-col gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 sm:w-auto">
           Search
           <input
-            className="ml-2 block w-48 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-900"
+            className="block w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-900 sm:w-48"
             placeholder="Email or name"
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -183,7 +183,7 @@ export function UsersAdminTable({ title, description, fixedRoles }: Props) {
         </label>
         <button
           type="button"
-          className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white"
+          className="flex-1 rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-800 active:scale-95 sm:flex-none sm:py-1.5"
           onClick={() => {
             setPage(1);
             void load(1);

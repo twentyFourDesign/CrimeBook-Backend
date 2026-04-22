@@ -87,57 +87,77 @@ function Icon({ name }: { name: (typeof sections)[number]["items"][number]["icon
   }
 }
 
-export function AdminSidebar() {
+export function AdminSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white shadow-[4px_0_24px_-12px_rgba(15,23,42,0.08)]">
-      <div className="border-b border-slate-100 px-5 py-6">
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-sm">
-            AD
+    <>
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200/80 bg-white shadow-[4px_0_24px_-12px_rgba(15,23,42,0.08)] transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-6">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-sm">
+              AD
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Console</p>
+              <p className="text-base font-semibold tracking-tight text-slate-900">Administration</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Console</p>
-            <p className="text-base font-semibold tracking-tight text-slate-900">Administration</p>
-          </div>
+          {/* Close button for mobile */}
+          <button
+            type="button"
+            className="rounded-lg p-1 text-slate-400 hover:bg-slate-50 lg:hidden"
+            onClick={onClose}
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-      </div>
-      <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-4">
-        {sections.map((section) => (
-          <div key={section.title}>
-            <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">{section.title}</p>
-            <ul className="flex flex-col gap-0.5">
-              {section.items.map((item) => {
-                const active =
-                  item.href === "/admin"
-                    ? pathname === "/admin"
-                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                        active
-                          ? "active bg-blue-50 text-blue-900 shadow-sm ring-1 ring-blue-100/80"
-                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                      }`}
-                    >
-                      <Icon name={item.icon} />
-                      <span>{item.label}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </nav>
-      <div className="border-t border-slate-100 px-5 py-4">
-        <p className="text-[11px] leading-relaxed text-slate-400">
-          Crime reporting · System tools for operators only.
-        </p>
-      </div>
-    </aside>
+        <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-4">
+          {sections.map((section) => (
+            <div key={section.title}>
+              <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                {section.title}
+              </p>
+              <ul className="flex flex-col gap-0.5">
+                {section.items.map((item) => {
+                  const active =
+                    item.href === "/admin"
+                      ? pathname === "/admin"
+                      : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        onClick={() => onClose()}
+                        className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                          active
+                            ? "active bg-blue-50 text-blue-900 shadow-sm ring-1 ring-blue-100/80"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        }`}
+                      >
+                        <Icon name={item.icon} />
+                        <span>{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+        <div className="border-t border-slate-100 px-5 py-4">
+          <p className="text-[11px] leading-relaxed text-slate-400">
+            Crime reporting · System tools for operators only.
+          </p>
+        </div>
+      </aside>
+    </>
   );
 }
+

@@ -18,8 +18,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const login = async () => {
+    // ... code ...
     setError(null);
     setLoading(true);
     try {
@@ -109,24 +111,56 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <AdminSidebar />
+      {/* Sidebar with mobile state */}
+      <AdminSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+      {/* Mobile backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Signed in</p>
-            <p className="text-sm font-semibold text-slate-900">{me?.email}</p>
-            <p className="text-xs text-slate-500">{me?.role}</p>
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:px-6 lg:py-4">
+          <div className="flex items-center gap-3">
+            {/* Hamburger menu */}
+            <button
+              type="button"
+              className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 lg:hidden"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="hidden sm:block">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Environment</p>
+              <p className="text-xs font-semibold text-slate-900">Admin Console</p>
+            </div>
           </div>
-          <button
-            type="button"
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50"
-            onClick={logout}
-          >
-            Sign out
-          </button>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Session</p>
+              <p className="max-w-[120px] truncate text-xs font-semibold text-slate-900 sm:max-w-none">
+                {me?.email}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+              onClick={logout}
+            >
+              Logout
+            </button>
+          </div>
         </header>
-        <main className="min-w-0 flex-1 overflow-auto p-6">{children}</main>
+
+        <main className="min-w-0 flex-1 overflow-auto p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );
 }
+

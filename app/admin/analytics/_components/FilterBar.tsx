@@ -90,19 +90,19 @@ export function FilterBar({
     (filters.timeRange !== "all" ? 1 : 0);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white/80 backdrop-blur-sm p-4 shadow-sm">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm backdrop-blur-sm lg:p-4">
+      <div className="flex flex-wrap items-center gap-2 lg:gap-3">
         {/* Time range */}
-        <div className="flex items-center gap-1">
-          <span className="mr-1 text-xs font-semibold uppercase tracking-widest text-slate-400">
+        <div className="flex w-full items-center gap-1 sm:w-auto">
+          <span className="mr-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
             Period
           </span>
-          <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+          <div className="flex flex-1 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 sm:flex-none">
             {TIME_RANGES.map((tr) => (
               <button
                 key={tr.value}
                 type="button"
-                className={`px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
+                className={`flex-1 px-2.5 py-1.5 text-[10px] font-bold transition-all duration-150 sm:flex-none sm:px-3 sm:text-xs ${
                   filters.timeRange === tr.value
                     ? "bg-indigo-600 text-white shadow-sm"
                     : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
@@ -115,13 +115,13 @@ export function FilterBar({
           </div>
         </div>
 
-        <div className="h-5 w-px bg-slate-200" />
+        <div className="hidden h-5 w-px bg-slate-200 sm:block" />
 
         {/* Category picker */}
-        <div className="relative">
+        <div className="relative flex-1 sm:flex-none">
           <button
             type="button"
-            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
+            className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-1.5 px-3 py-2 text-xs font-semibold transition-all duration-150 sm:w-auto sm:py-1.5 ${
               filters.categories.length > 0
                 ? "border-indigo-300 bg-indigo-50 text-indigo-700"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
@@ -139,7 +139,7 @@ export function FilterBar({
             )}
           </button>
           {catOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1.5 w-60 rounded-xl border border-slate-200 bg-white p-3 shadow-xl">
+            <div className="absolute left-0 top-full z-50 mt-1.5 w-60 rounded-xl border border-slate-200 bg-white p-3 shadow-xl sm:w-64">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500">Filter by category</span>
                 {filters.categories.length > 0 && (
@@ -165,7 +165,7 @@ export function FilterBar({
                       }`}
                       style={
                         active
-                          ? { backgroundColor: color + "22", borderColor: color + "66", color }
+                          ? { backgroundColor: color + "18", borderColor: color + "44", color }
                           : {}
                       }
                     >
@@ -179,10 +179,10 @@ export function FilterBar({
         </div>
 
         {/* Status picker */}
-        <div className="relative">
+        <div className="relative flex-1 sm:flex-none">
           <button
             type="button"
-            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
+            className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-1.5 px-3 py-2 text-xs font-semibold transition-all duration-150 sm:w-auto sm:py-1.5 ${
               filters.statuses.length > 0
                 ? "border-violet-300 bg-violet-50 text-violet-700"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
@@ -200,7 +200,7 @@ export function FilterBar({
             )}
           </button>
           {statusOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1.5 w-64 rounded-xl border border-slate-200 bg-white p-3 shadow-xl">
+            <div className="absolute left-0 top-full z-50 mt-1.5 w-60 rounded-xl border border-slate-200 bg-white p-3 shadow-xl sm:w-64">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500">Filter by status</span>
                 {filters.statuses.length > 0 && (
@@ -224,10 +224,10 @@ export function FilterBar({
                       className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition-all ${
                         active ? "shadow-sm" : "text-slate-600 hover:bg-slate-50"
                       }`}
-                      style={active ? { backgroundColor: color + "18", color } : {}}
+                      style={active ? { backgroundColor: color + "12", color } : {}}
                     >
                       <span
-                        className="h-2 w-2 rounded-full flex-shrink-0"
+                        className="h-2 w-2 flex-shrink-0 rounded-full"
                         style={{ backgroundColor: color }}
                       />
                       {fmt(s)}
@@ -240,37 +240,34 @@ export function FilterBar({
         </div>
 
         {activeCount > 0 && (
-          <>
-            <div className="h-5 w-px bg-slate-200" />
-            <button
-              type="button"
-              className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 transition-colors"
-              onClick={clearAll}
-            >
-              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Clear filters ({activeCount})
-            </button>
-          </>
+          <button
+            type="button"
+            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-bold text-red-500 transition-colors hover:bg-red-50"
+            onClick={clearAll}
+          >
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Clear ({activeCount})
+          </button>
         )}
       </div>
 
       {/* Active filter chips */}
       {filters.categories.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-2.5 flex flex-wrap gap-1.5 border-t border-slate-100 pt-2.5">
           {filters.categories.map((c) => (
             <span
               key={c}
-              className="flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+              className="flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold"
               style={{
-                backgroundColor: CATEGORY_COLORS[c] + "22",
+                backgroundColor: CATEGORY_COLORS[c] + "18",
                 color: CATEGORY_COLORS[c],
-                border: `1px solid ${CATEGORY_COLORS[c]}44`,
+                border: `1px solid ${CATEGORY_COLORS[c]}33`,
               }}
             >
               {fmt(c)}
-              <button onClick={() => toggleCat(c)} className="ml-0.5 opacity-60 hover:opacity-100">×</button>
+              <button onClick={() => toggleCat(c)} className="ml-1 opacity-60 hover:opacity-100">×</button>
             </span>
           ))}
         </div>

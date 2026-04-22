@@ -175,17 +175,17 @@ export default function AdminOverviewPage() {
           )}
 
           <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-6 lg:col-span-2">
               {/* Hotspots Section */}
               {analytics?.hotspots && analytics.hotspots.length > 0 && (
                 <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
                     <h2 className="text-sm font-semibold text-slate-900">High-Risk Hotspots</h2>
                     <Link href="/admin/map" className="text-xs font-medium text-blue-600 hover:underline">View on map</Link>
                   </div>
                   <div className="mt-4 divide-y divide-slate-100">
                     {analytics.hotspots.slice(0, 5).map((h) => (
-                      <div key={h.id} className="flex items-center justify-between py-3">
+                      <div key={h.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                         <div>
                           <p className="text-sm font-medium text-slate-900 capitalize">
                             {h.crimeCategory?.toLowerCase().replace(/_/g, " ")}
@@ -195,10 +195,10 @@ export default function AdminOverviewPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                          <span className={`inline-flex items-center rounded-full px-2 py-1 text-[10px] font-semibold ${
                             h.riskScore > 70 ? "bg-red-100 text-red-700" : h.riskScore > 40 ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"
                           }`}>
-                            Risk Score: {h.riskScore.toFixed(0)}
+                            Risk: {h.riskScore.toFixed(0)}
                           </span>
                         </div>
                       </div>
@@ -211,15 +211,15 @@ export default function AdminOverviewPage() {
               {analytics?.patterns && analytics.patterns.length > 0 && (
                 <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                   <h2 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-3">Temporal Peak Patterns</h2>
-                  <div className="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2">
+                  <div className="mt-4 grid gap-4 grid-cols-1 md:grid-cols-2">
                     {analytics.patterns.sort((a, b) => b.avgIncidentCount - a.avgIncidentCount).slice(0, 4).map((p) => (
                       <div key={p.id} className="rounded-lg bg-slate-50 p-3">
                         <p className="text-xs font-semibold text-slate-500 uppercase">{p.crimeCategory.replace(/_/g, " ")}</p>
                         <p className="mt-1 text-sm font-medium text-slate-900">
-                          {DAYS[p.dayOfWeek]}s around {p.hourOfDay}:00
+                          {DAYS[p.dayOfWeek]}s · {p.hourOfDay}:00
                         </p>
                         <p className="mt-0.5 text-xs text-slate-600">
-                          {p.avgIncidentCount} incidents in window
+                          ~{p.avgIncidentCount.toFixed(1)} incidents
                         </p>
                       </div>
                     ))}
@@ -244,18 +244,18 @@ export default function AdminOverviewPage() {
                 <h2 className="text-sm font-semibold text-slate-900">Quick links</h2>
                 <ul className="mt-3 space-y-2 text-sm">
                   <li>
-                    <Link className="font-medium text-blue-600 hover:underline" href="/admin/verifications/community">
-                      Community verification queue
-                    </Link>
-                  </li>
-                  <li>
-                    <Link className="font-medium text-blue-600 hover:underline" href="/admin/verifications/police">
-                      Police onboarding queue
+                    <Link className="font-medium text-blue-600 hover:underline" href="/admin/verifications">
+                      Verification queue
                     </Link>
                   </li>
                   <li>
                     <Link className="font-medium text-blue-600 hover:underline" href="/admin/map">
                       Incident map
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="font-medium text-blue-600 hover:underline" href="/admin/analytics">
+                      Detailed Analytics
                     </Link>
                   </li>
                 </ul>

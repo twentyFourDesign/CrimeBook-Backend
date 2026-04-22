@@ -332,13 +332,13 @@ export default function AnalyticsPage() {
             </h1>
           </div>
           <p className="mt-1 text-sm text-slate-500">
-            Platform-wide intelligence · {incidents.length.toLocaleString()} incidents indexed
+            Platform-wide intelligence · {incidents.length.toLocaleString()} incidents
           </p>
         </div>
         <button
           onClick={computeAnalytics}
           disabled={computing}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:from-indigo-700 hover:to-purple-700 disabled:opacity-60 transition-all"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:from-indigo-700 hover:to-purple-700 disabled:opacity-60 sm:w-auto"
         >
           <svg className={`h-4 w-4 ${computing ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -391,13 +391,13 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Quick metrics row */}
-          <div className="grid gap-4 sm:grid-cols-4">
-            <div className="rounded-xl border border-slate-200 bg-white/70 px-5 py-3 backdrop-blur-sm shadow-sm">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-slate-200 bg-white/70 px-5 py-3 shadow-sm backdrop-blur-sm">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Anonymous</p>
               <p className="mt-1 text-2xl font-bold text-slate-900">{anonPct}%</p>
-              <p className="text-xs text-slate-500">{anonymousCount} anonymous reports</p>
+              <p className="text-xs text-slate-500">{anonymousCount} reports</p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white/70 px-5 py-3 backdrop-blur-sm shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white/70 px-5 py-3 shadow-sm backdrop-blur-sm">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pending Verif.</p>
               <p className="mt-1 text-2xl font-bold text-amber-600">
                 {(stats?.verifications.pendingCommunity ?? 0) + (stats?.verifications.pendingPolice ?? 0)}
@@ -406,7 +406,7 @@ export default function AnalyticsPage() {
                 {stats?.verifications.pendingCommunity ?? 0} community · {stats?.verifications.pendingPolice ?? 0} police
               </p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white/70 px-5 py-3 backdrop-blur-sm shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white/70 px-5 py-3 shadow-sm backdrop-blur-sm">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">High Risk Zones</p>
               <p className="mt-1 text-2xl font-bold text-red-600">
                 {analytics?.hotspots.filter((h) => h.riskScore > 70).length ?? 0}
@@ -415,15 +415,15 @@ export default function AnalyticsPage() {
                 of {analytics?.hotspots.length ?? 0} total hotspots
               </p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white/70 px-5 py-3 backdrop-blur-sm shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white/70 px-5 py-3 shadow-sm backdrop-blur-sm">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Avg. Credibility</p>
               <p className="mt-1 text-2xl font-bold text-slate-900">
                 {filtered.length > 0
                   ? Math.round(filtered.reduce((s, i) => s + (i.credibilityScore ?? 50), 0) / filtered.length)
                   : "—"}
-                {filtered.length > 0 && <span className="text-sm text-slate-400">/100</span>}
+                {filtered.length > 0 && <span className="text-sm font-normal text-slate-400">/100</span>}
               </p>
-              <p className="text-xs text-slate-500">across filtered incidents</p>
+              <p className="text-xs text-slate-500">across filtered reports</p>
             </div>
           </div>
 
@@ -456,7 +456,7 @@ export default function AnalyticsPage() {
             {/* Area chart – incidents over time */}
             <ChartCard
               title="Incidents Over Time"
-              subtitle={`Daily volume · ${timeSeries.length} data points`}
+              subtitle={`Daily volume · ${timeSeries.length} points`}
             >
               <AreaChart
                 data={timeSeries}
@@ -471,7 +471,9 @@ export default function AnalyticsPage() {
               title="Incidents by Category"
               subtitle="Filtered selection"
             >
-              <HorizontalBarChart items={byCategory} />
+              <div className="overflow-x-auto">
+                <HorizontalBarChart items={byCategory} />
+              </div>
             </ChartCard>
 
             {/* Incident status donut */}
@@ -479,12 +481,14 @@ export default function AnalyticsPage() {
               title="Incident Status Distribution"
               subtitle="Current status breakdown"
             >
-              <DonutChart
-                slices={byStatus}
-                centerLabel="filtered"
-                centerValue={filtered.length}
-                size={200}
-              />
+              <div className="overflow-x-auto">
+                <DonutChart
+                  slices={byStatus}
+                  centerLabel="filtered"
+                  centerValue={filtered.length}
+                  size={200}
+                />
+              </div>
             </ChartCard>
 
             {/* Case status donut */}
@@ -492,47 +496,53 @@ export default function AnalyticsPage() {
               title="Case Status Breakdown"
               subtitle="All case files"
             >
-              <DonutChart
-                slices={Object.entries(stats?.cases.byStatus ?? {}).map(([label, value]) => ({
-                  label,
-                  value: value as number,
-                  color:
-                    label === "CLOSED" ? "#22c55e" :
-                    label === "OPEN" ? "#6366f1" :
-                    label === "INVESTIGATING" ? "#f59e0b" :
-                    label === "SUSPECT_ARRESTED" ? "#ef4444" :
-                    label === "COLD_CASE" ? "#94a3b8" :
-                    "#3b82f6",
-                }))}
-                centerLabel="cases"
-                centerValue={stats?.cases.total ?? 0}
-                size={200}
-              />
+              <div className="overflow-x-auto">
+                <DonutChart
+                  slices={Object.entries(stats?.cases.byStatus ?? {}).map(([label, value]) => ({
+                    label,
+                    value: value as number,
+                    color:
+                      label === "CLOSED" ? "#22c55e" :
+                      label === "OPEN" ? "#6366f1" :
+                      label === "INVESTIGATING" ? "#f59e0b" :
+                      label === "SUSPECT_ARRESTED" ? "#ef4444" :
+                      label === "COLD_CASE" ? "#94a3b8" :
+                      "#3b82f6",
+                  }))}
+                  centerLabel="cases"
+                  centerValue={stats?.cases.total ?? 0}
+                  size={200}
+                />
+              </div>
             </ChartCard>
           </div>
 
           {/* Second row */}
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {/* Users by role */}
-            <ChartCard title="Users by Role" subtitle="All registered users">
-              <HorizontalBarChart
-                items={Object.entries(stats?.users.byRole ?? {}).map(([label, value]) => ({
-                  label,
-                  value: value as number,
-                  color:
-                    label === "SYSTEM_ADMIN" ? "#ef4444" :
-                    label === "POLICE_COMMAND" ? "#8b5cf6" :
-                    label === "POLICE_OFFICER" ? "#3b82f6" :
-                    label === "VERIFIED_COMMUNITY_MEMBER" ? "#22c55e" :
-                    label === "ENTERPRISE_SECURITY" ? "#f59e0b" :
-                    "#94a3b8",
-                }))}
-              />
+            <ChartCard title="Users by Role" subtitle="All users">
+              <div className="overflow-x-auto">
+                <HorizontalBarChart
+                  items={Object.entries(stats?.users.byRole ?? {}).map(([label, value]) => ({
+                    label,
+                    value: value as number,
+                    color:
+                      label === "SYSTEM_ADMIN" ? "#ef4444" :
+                      label === "POLICE_COMMAND" ? "#8b5cf6" :
+                      label === "POLICE_OFFICER" ? "#3b82f6" :
+                      label === "VERIFIED_COMMUNITY_MEMBER" ? "#22c55e" :
+                      label === "ENTERPRISE_SECURITY" ? "#f59e0b" :
+                      "#94a3b8",
+                  }))}
+                />
+              </div>
             </ChartCard>
 
             {/* Credibility distribution */}
-            <ChartCard title="Credibility Score Distribution" subtitle="AI-assessed report quality">
-              <HorizontalBarChart items={credBuckets} />
+            <ChartCard title="Credibility Score Distribution" subtitle="AI assessment">
+              <div className="overflow-x-auto">
+                <HorizontalBarChart items={credBuckets} />
+              </div>
             </ChartCard>
 
             {/* Hotspot risk ranking */}
@@ -549,17 +559,17 @@ export default function AnalyticsPage() {
                       "#3b82f6";
                     return (
                       <div key={h.id} className="flex items-center gap-3">
-                        <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500">
                           {i + 1}
                         </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="truncate text-xs font-medium capitalize text-slate-700">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs font-semibold capitalize text-slate-700">
                             {h.crimeCategory?.toLowerCase().replace(/_/g, " ") ?? "Mixed crimes"}
                           </p>
                           <p className="text-[10px] text-slate-400">{h.incidentCount} incidents</p>
                         </div>
                         <div
-                          className="rounded-full px-2.5 py-1 text-[11px] font-bold"
+                          className="rounded-full px-2 py-0.5 text-[10px] font-bold"
                           style={{ backgroundColor: riskColor + "18", color: riskColor }}
                         >
                           {Math.round(h.riskScore)}
@@ -569,8 +579,8 @@ export default function AnalyticsPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-slate-400 py-4 text-center">
-                  No hotspot data. Click "Refresh Intelligence" to compute.
+                <p className="py-4 text-center text-sm text-slate-400">
+                  No hotspot data available.
                 </p>
               )}
             </ChartCard>
@@ -579,9 +589,11 @@ export default function AnalyticsPage() {
           {/* Temporal heatmap – full width */}
           <ChartCard
             title="Crime Temporal Heatmap"
-            subtitle="Weekly pattern intensity by hour of day"
+            subtitle="Weekly pattern intensity by hour"
           >
-            <HeatGrid patterns={analytics?.patterns ?? []} />
+            <div className="mt-2">
+              <HeatGrid patterns={analytics?.patterns ?? []} />
+            </div>
           </ChartCard>
         </>
       )}
