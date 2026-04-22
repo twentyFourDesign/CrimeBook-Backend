@@ -7,7 +7,7 @@ import { prisma } from "@/src/lib/prisma";
 
 const querySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(200).default(30),
+  pageSize: z.coerce.number().int().min(1).max(1000).default(30),
   status: z.nativeEnum(ReportStatus).optional(),
   crimeCategory: z.nativeEnum(CrimeCategory).optional(),
   from: z.coerce.date().optional(),

@@ -5,11 +5,14 @@ import { usePathname } from "next/navigation";
 
 const sections: {
   title: string;
-  items: { href: string; label: string; icon: "home" | "users" | "shield" | "map" | "file" | "check" }[];
+  items: { href: string; label: string; icon: "home" | "users" | "shield" | "map" | "file" | "check" | "chart" }[];
 }[] = [
   {
     title: "Dashboard",
-    items: [{ href: "/admin", label: "Overview", icon: "home" }],
+    items: [
+      { href: "/admin", label: "Overview", icon: "home" },
+      { href: "/admin/analytics", label: "Analytics", icon: "chart" },
+    ],
   },
   {
     title: "Verifications",
@@ -71,6 +74,12 @@ function Icon({ name }: { name: (typeof sections)[number]["items"][number]["icon
       return (
         <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+    case "chart":
+      return (
+        <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       );
     default:

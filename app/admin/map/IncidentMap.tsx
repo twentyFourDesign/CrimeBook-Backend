@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { GoogleMap, useJsApiLoader, Marker, Circle, InfoWindow } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, Marker, Circle, InfoWindow, HeatmapLayer } from "@react-google-maps/api";
 import { useAdminSession } from "../_lib/admin-session";
 
 type IncidentPt = {
@@ -38,6 +38,7 @@ const mapContainerStyle = {
 };
 
 const defaultCenter = { lat: 20, lng: 0 };
+const LIBRARIES: ("visualization" | "places" | "drawing" | "geometry")[] = ["visualization"];
 
 function MissingKey() {
   return (
@@ -54,7 +55,7 @@ function MissingKey() {
 
 function IncidentMapInner({ apiKey }: { apiKey: string }) {
   const { accessToken, authHeaders } = useAdminSession();
-  const [viewMode, setViewMode] = useState<"incidents" | "hotspots">("incidents");
+  const [viewMode, setViewMode] = useState<"incidents" | "hotspots" | "heatmap">("incidents");
   const [points, setPoints] = useState<IncidentPt[]>([]);
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,6 +67,7 @@ function IncidentMapInner({ apiKey }: { apiKey: string }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: "admin-incidents-map",
     googleMapsApiKey: apiKey,
+    libraries: LIBRARIES,
   });
 
   const load = useCallback(async () => {
@@ -155,6 +157,17 @@ function IncidentMapInner({ apiKey }: { apiKey: string }) {
           >
             Intelligence (Hotspots)
           </button>
+          <button
+            type="button"
+            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+              viewMode === "heatmap"
+                ? "bg-slate-900 text-white"
+                : "text-slate-600 hover:bg-slate-50"
+            }`}
+            onClick={() => { setViewMode("heatmap"); setSelectedPoint(null); setSelectedHotspot(null); }}
+          >
+            Heatmap
+          </button>
         </div>
         <button
           type="button"
@@ -197,7 +210,8 @@ function IncidentMapInner({ apiKey }: { apiKey: string }) {
                     onClick={() => setSelectedPoint(p)}
                   />
                 ))
-              : hotspots.map((h) => (
+              : viewMode === "hotspots"
+              ? hotspots.map((h) => (
                   <Circle
                     key={h.id}
                     center={{ lat: h.latitude, lng: h.longitude }}
@@ -211,7 +225,15 @@ function IncidentMapInner({ apiKey }: { apiKey: string }) {
                       strokeWeight: 1,
                     }}
                   />
-                ))}
+                ))
+              : viewMode === "heatmap"
+              ? (
+                  <HeatmapLayer
+                    data={points.map(p => new google.maps.LatLng(p.latitude, p.longitude))}
+                    options={{ radius: 30, opacity: 0.6 }}
+                  />
+                )
+              : null}
 
             {selectedPoint && (
               <InfoWindow
